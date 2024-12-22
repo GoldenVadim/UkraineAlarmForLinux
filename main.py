@@ -1,35 +1,35 @@
+#!/usr/bin/env python3
+
 from pystray import Icon,MenuItem,Menu
 from tkinter import messagebox
 from os import path,name,mkdir
 from threading import Thread
-from requests import Session
+from requests import get
 from json import loads
 from time import sleep
 from PIL import Image
 
-if name=='nt':messagebox.showinfo('Ukraine Alarm/Alert','Це неофіційна програма тривог, але є офіційно доступна для Windows: https://winapp.ukrainealarm.com/publish/setup.exe')
+if name=='nt':
+    messagebox.showinfo('Ukraine Alarm/Alert','Це неофіційна програма тривог, але є офіційно доступна для Windows: https://winapp.ukrainealarm.com/publish/setup.exe')
+    exit(0)
 
 BASE_URL='https://api.ukrainealarm.com/api/v3/'
 API_KEY='de48614d:654f3ad5a03ae3ee8dab1d9a025738f3'
 
-RUNNING=True
-def on_quit():
-    global RUNNING
-    ICON.stop()
-    RUNNING=False
-
 ICONS={'normal':Image.open('favicon.ico'),'connection_error':Image.open('favicon_warning.ico')}
-ICON = Icon('Ukraine Alarm/Alert',ICONS['normal'],'Тривога!',Menu(MenuItem('Показати статус',...),MenuItem('Вийти',on_quit)),visible=True)
+ICON = Icon('Ukraine Alarm/Alert',ICONS['normal'],'Тривога!',Menu(MenuItem('Показати статус',...),MenuItem('Вийти',lambda: RUNNING==False)),visible=True)
 
 Thread(target=ICON.notify,args=('Отримання інформації...','Тривога!',)).start()
-REQUESTS_SESSION,SELECTED_REGION,ACTIVE_ALERTS,ACTIVE_AIR_ALERT,ACTIVE_ARTILLERY_ALERT,PROBLEMS=Session(),'30',0,False,False,False
+SELECTED_REGION,ACTIVE_ALERTS,ACTIVE_AIR_ALERT,ACTIVE_ARTILLERY_ALERT,PROBLEMS,RUNNING='30',0,False,False,False,True
 Thread(target=ICON.run).start()
     
 while RUNNING:
     try:
-        RESPONSE=REQUESTS_SESSION.get(BASE_URL+'alerts/'+SELECTED_REGION,headers={'Authorization':API_KEY})
+        RESPONSE=get(BASE_URL+'alerts/'+SELECTED_REGION,headers={'Authorization':API_KEY})
         INFO=loads(RESPONSE.content)
-        if len(INFO)==0:Thread(target=ICON.notify,args=('Цей регіон не було знайдено!','Тривога!',)).start()
+        if len(INFO)==0:
+            Thread(target=ICON.notify,args=('Цей регіон не було знайдено!','Тривога!',)).start()
+            RUNNING=False
         else:
             if ACTIVE_ALERTS>len(INFO['activeAlerts']):
                 ACTIVE_ALERTS=len(INFO['activeAlerts'])
@@ -48,3 +48,4 @@ while RUNNING:
         if not PROBLEMS:
             ICON.icon=ICONS['connection_error']
             PROBLEMS=True
+else:ICON.stop()
