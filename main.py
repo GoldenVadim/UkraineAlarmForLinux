@@ -7,8 +7,7 @@ from json import loads
 from time import sleep
 from PIL import Image
 
-if name=='nt':
-    messagebox.showinfo('Ukraine Alarm/Alert','Це неофіційна програма тривог, але є офіційно доступна для Windows: https://winapp.ukrainealarm.com/publish/setup.exe')
+if name=='nt':messagebox.showinfo('Ukraine Alarm/Alert','Це неофіційна програма тривог, але є офіційно доступна для Windows: https://winapp.ukrainealarm.com/publish/setup.exe')
 
 BASE_URL='https://api.ukrainealarm.com/api/v3/'
 API_KEY='de48614d:654f3ad5a03ae3ee8dab1d9a025738f3'
